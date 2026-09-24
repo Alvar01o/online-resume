@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import GraphBackground from './GraphBackground.astro';
 import { content, site, type Lang } from '../i18n/content';
 
 interface Props { lang: Lang; }
@@ -37,6 +38,7 @@ const marquee = [...t.marquee, ...t.marquee];
   <main id="top">
     <!-- Hero -->
     <section class="hero">
+      <GraphBackground />
       <div class="wrap hero-grid">
         <div class="reveal hero-copy">
           <span class="label eyebrow">{t.hero.eyebrow}</span>

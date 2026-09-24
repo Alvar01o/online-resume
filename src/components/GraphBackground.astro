@@ -1,0 +1,198 @@
+---
+// Grafo interactivo de fondo (Canvas 2D, sin dependencias).
+// Los nodos con etiqueta son tecnologías del stack. El puntero se conecta a los nodos cercanos,
+// pasar sobre una etiqueta resalta sus conexiones y un clic lanza una onda que ilumina la red.
+---
+<canvas class="graph" aria-hidden="true"></canvas>
+
+<script>
+  type Node = {
+    x: number; y: number; vx: number; vy: number;
+    r: number; label?: string; flash: number; hot: number;
+  };
+  type Ripple = { x: number; y: number; t: number };
+
+  const canvas = document.querySelector<HTMLCanvasElement>('.graph');
+  const LABELS = ['PHP', 'Laravel', 'GCP', 'AWS', 'Kubernetes', 'Docker', 'Redis', 'SQS', 'PostgreSQL', 'SIFEN', 'MCP', 'CI/CD'];
+
+  function init() {
+    if (!canvas) return;
+    const host = canvas.parentElement as HTMLElement;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let w = 0, h = 0, dpr = 1;
+    const nodes: Node[] = [];
+    const ripples: Ripple[] = [];
+    const ptr = { x: -9999, y: -9999, on: false };
+    let hub: Node | null = null;
+    let running = false, raf = 0, last = 0;
+
+    const LINK = () => (w < 700 ? 110 : 150);   // distancia máxima de conexión
+    const PTR_R = () => (w < 700 ? 130 : 190);  // radio de influencia del puntero
+
+    function build() {
+      const area = w * h;
+      const count = Math.max(26, Math.min(78, Math.round(area / 17000)));
+      const hubs = w < 700 ? 6 : LABELS.length;
+      nodes.length = 0;
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2, s = 6 + Math.random() * 10; // px/s
+        const isHub = i < hubs;
+        nodes.push({
+          x: Math.random() * w, y: Math.random() * h,
+          vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+          r: isHub ? 3.6 : 1.5 + Math.random() * 1.1,
+          label: isHub ? LABELS[i] : undefined,
+          flash: 0, hot: 0,
+        });
+      }
+    }
+
+    function resize() {
+      const nw = host.clientWidth, nh = host.clientHeight;
+      if (!nw || !nh) return;
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas!.width = Math.round(nw * dpr);
+      canvas!.height = Math.round(nh * dpr);
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (nodes.length) {
+        for (const n of nodes) { n.x *= nw / (w || nw); n.y *= nh / (h || nh); }
+      }
+      w = nw; h = nh;
+      if (!nodes.length) build();
+      draw();
+    }
+
+    function step(dt: number) {
+      const R = PTR_R();
+      for (const n of nodes) {
+        // atracción suave hacia el puntero
+        if (ptr.on) {
+          const dx = ptr.x - n.x, dy = ptr.y - n.y, d = Math.hypot(dx, dy);
+          if (d < R && d > 1) {
+            const f = (1 - d / R) * 38; // px/s²
+            n.vx += (dx / d) * f * dt; n.vy += (dy / d) * f * dt;
+          }
+        }
+        // limita la velocidad para que siempre "flote"
+        const sp = Math.hypot(n.vx, n.vy), max = 22, min = 5;
+        if (sp > max) { n.vx *= max / sp; n.vy *= max / sp; }
+        else if (sp < min) { n.vx *= 1.02; n.vy *= 1.02; }
+        n.x += n.vx * dt; n.y += n.vy * dt;
+        if (n.x < 0 || n.x > w) { n.vx *= -1; n.x = Math.max(0, Math.min(w, n.x)); }
+        if (n.y < 0 || n.y > h) { n.vy *= -1; n.y = Math.max(0, Math.min(h, n.y)); }
+        n.flash = Math.max(0, n.flash - dt * 1.6);
+      }
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const r = ripples[i]; r.t += dt;
+        const rad = r.t * 340;
+        for (const n of nodes) {
+          if (Math.abs(Math.hypot(n.x - r.x, n.y - r.y) - rad) < 16) n.flash = 1;
+        }
+        if (r.t > 1.1) ripples.splice(i, 1);
+      }
+      // hub bajo el puntero
+      hub = null;
+      if (ptr.on) {
+        let best = 46;
+        for (const n of nodes) if (n.label) {
+          const d = Math.hypot(n.x - ptr.x, n.y - ptr.y);
+          if (d < best) { best = d; hub = n; }
+        }
+      }
+      for (const n of nodes) n.hot += ((n === hub ? 1 : 0) - n.hot) * Math.min(1, dt * 10);
+    }
+
+    function draw() {
+      ctx!.clearRect(0, 0, w, h);
+      const L = LINK(), R = PTR_R();
+      ctx!.lineWidth = 1;
+
+      // conexiones entre nodos
+      for (let i = 0; i < nodes.length; i++) {
+        const a = nodes[i];
+        for (let j = i + 1; j < nodes.length; j++) {
+          const b = nodes[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          if (Math.abs(dx) > L || Math.abs(dy) > L) continue;
+          const d = Math.hypot(dx, dy);
+          if (d > L) continue;
+          let alpha = (1 - d / L) * 0.26;
+          const boost = Math.max(a.hot, b.hot);
+          const fl = Math.max(a.flash, b.flash);
+          alpha = Math.min(0.9, alpha + boost * 0.55 * (1 - d / L) + fl * 0.4);
+          ctx!.strokeStyle = boost > 0.05 || fl > 0.05
+            ? `rgba(170,190,255,${alpha})` : `rgba(130,155,255,${alpha})`;
+          ctx!.beginPath(); ctx!.moveTo(a.x, a.y); ctx!.lineTo(b.x, b.y); ctx!.stroke();
+        }
+      }
+
+      // conexiones puntero → nodos
+      if (ptr.on) {
+        for (const n of nodes) {
+          const d = Math.hypot(n.x - ptr.x, n.y - ptr.y);
+          if (d < R) {
+            ctx!.strokeStyle = `rgba(200,214,255,${(1 - d / R) * 0.7})`;
+            ctx!.beginPath(); ctx!.moveTo(ptr.x, ptr.y); ctx!.lineTo(n.x, n.y); ctx!.stroke();
+          }
+        }
+        ctx!.fillStyle = 'rgba(220,230,255,0.9)';
+        ctx!.beginPath(); ctx!.arc(ptr.x, ptr.y, 2.4, 0, Math.PI * 2); ctx!.fill();
+      }
+
+      // ondas de clic
+      for (const r of ripples) {
+        ctx!.strokeStyle = `rgba(160,180,255,${Math.max(0, 0.45 * (1 - r.t / 1.1))})`;
+        ctx!.beginPath(); ctx!.arc(r.x, r.y, r.t * 340, 0, Math.PI * 2); ctx!.stroke();
+      }
+
+      // nodos y etiquetas
+      ctx!.font = '11px "JetBrains Mono", ui-monospace, monospace';
+      ctx!.textBaseline = 'middle';
+      for (const n of nodes) {
+        const glow = Math.max(n.hot, n.flash);
+        if (n.label) {
+          ctx!.fillStyle = `rgba(144,164,255,${0.10 + glow * 0.3})`;
+          ctx!.beginPath(); ctx!.arc(n.x, n.y, n.r + 5 + glow * 4, 0, Math.PI * 2); ctx!.fill();
+        }
+        ctx!.fillStyle = `rgba(205,217,255,${0.55 + glow * 0.45})`;
+        ctx!.beginPath(); ctx!.arc(n.x, n.y, n.r + glow * 1.5, 0, Math.PI * 2); ctx!.fill();
+        if (n.label) {
+          ctx!.fillStyle = `rgba(196,208,255,${0.5 + n.hot * 0.5})`;
+          ctx!.fillText(n.label, n.x + n.r + 8, n.y);
+        }
+      }
+    }
+
+    function loop(now: number) {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      step(dt); draw();
+      raf = requestAnimationFrame(loop);
+    }
+    const start = () => { if (!running && !reduce) { running = true; last = performance.now(); raf = requestAnimationFrame(loop); } };
+    const stop = () => { running = false; cancelAnimationFrame(raf); };
+
+    new ResizeObserver(resize).observe(host);
+    resize();
+    canvas.classList.add('ready');
+    if (reduce) return;
+
+    new IntersectionObserver(([e]) => (e.isIntersecting ? start() : stop())).observe(host);
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    const setPtr = (e: PointerEvent) => {
+      const r = host.getBoundingClientRect();
+      ptr.x = e.clientX - r.left; ptr.y = e.clientY - r.top; ptr.on = true;
+    };
+    host.addEventListener('pointermove', setPtr);
+    host.addEventListener('pointerdown', (e) => { setPtr(e); ripples.push({ x: ptr.x, y: ptr.y, t: 0 }); });
+    host.addEventListener('pointerleave', () => { ptr.on = false; });
+  }
+
+  const boot = () => { try { init(); } catch { /* sin canvas: queda el degradado */ } };
+  if ('requestIdleCallback' in window) (window as any).requestIdleCallback(boot, { timeout: 1000 });
+  else setTimeout(boot, 150);
+</script>
