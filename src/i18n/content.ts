@@ -6,7 +6,7 @@ export const site = {
   github: 'https://github.com/Alvar01o',
   linkedin: 'https://linkedin.com/in/alvaro-mercado-6b387a10b',
   location: 'Encarnación, Paraguay',
-  photo: '/img/alvaro.jpg',
+  photo: '/img/alvaro-cutout.webp',
 };
 
 const es = {

@@ -194,22 +194,14 @@ section { padding: 96px 0; }
 .socials svg { width: 18px; height: 18px; fill: currentColor; }
 .loc { font-family: var(--mono); font-size: 12px; color: var(--ink-3); margin-left: 8px; }
 
-.portrait { position: relative; justify-self: end; width: 100%; max-width: 400px; }
-.portrait .frame {
-  aspect-ratio: 4 / 5;
-  border-radius: 28px;
-  overflow: hidden;
-  line-height: 0;
-  transform: rotate(2deg);
-  transition: transform 0.5s ease;
-}
-.portrait:hover .frame { transform: rotate(0deg); }
+.portrait { position: relative; justify-self: end; width: 100%; max-width: 460px; }
+.portrait .frame { aspect-ratio: 1 / 1; line-height: 0; }
 .portrait img {
-  width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; display: block;
-  /* Difuminado sutil: solo la orilla se funde con el fondo de la sección */
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 6%, #000 94%, transparent 100%);
+  width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; display: block;
+  /* Recorte sin fondo: se suavizan los cortes del torso (abajo y costados) */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%), linear-gradient(to bottom, #000 0, #000 80%, transparent 100%);
   -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 6%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%), linear-gradient(to bottom, #000 0, #000 80%, transparent 100%);
   mask-composite: intersect;
 }
 .portrait .badge {
