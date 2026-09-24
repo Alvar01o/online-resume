@@ -59,6 +59,16 @@ const ogImage = new URL('/img/alvaro.jpg', Astro.site).href;
           try { localStorage.setItem('theme', next); } catch (e) {}
         });
       });
+      // Mobile menu: close on link click / outside tap
+      var menu = document.querySelector('.menu');
+      if (menu) {
+        menu.querySelectorAll('a').forEach(function (a) {
+          a.addEventListener('click', function () { menu.removeAttribute('open'); });
+        });
+        document.addEventListener('click', function (e) {
+          if (!menu.contains(e.target)) menu.removeAttribute('open');
+        });
+      }
       // Scroll reveal
       var els = document.querySelectorAll('.reveal');
       if ('IntersectionObserver' in window) {

@@ -19,6 +19,15 @@ const marquee = [...t.marquee, ...t.marquee];
         <a href="#contact">{t.nav.contact}</a>
       </nav>
       <div class="tools">
+        <details class="menu">
+          <summary class="pill" aria-label="Menu">☰</summary>
+          <nav class="menu-panel" aria-label="Mobile">
+            <a href="#about">{t.nav.about}</a>
+            <a href="#experience">{t.nav.experience}</a>
+            <a href="#skills">{t.nav.skills}</a>
+            <a href="#contact">{t.nav.contact}</a>
+          </nav>
+        </details>
         <button class="pill" type="button" data-theme-toggle aria-label="Toggle theme">◐</button>
         <a class="pill" href={`/${other}/`} hreflang={other} lang={other}>{t.switch.short}</a>
       </div>
