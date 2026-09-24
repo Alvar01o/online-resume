@@ -1,0 +1,88 @@
+---
+import '../styles/global.css';
+import type { Content } from '../i18n/content';
+
+interface Props { t: Content; }
+const { t } = Astro.props;
+const other = t.lang === 'es' ? 'en' : 'es';
+const path = Astro.url.pathname;
+const canonical = new URL(path, Astro.site);
+const alt = (l: string) => new URL(`/${l}/`, Astro.site).href;
+const ogImage = new URL('/img/alvaro.jpg', Astro.site).href;
+---
+<!doctype html>
+<html lang={t.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{t.meta.title}</title>
+    <meta name="description" content={t.meta.description} />
+    <link rel="canonical" href={canonical.href} />
+    <link rel="alternate" hreflang="es" href={alt('es')} />
+    <link rel="alternate" hreflang="en" href={alt('en')} />
+    <link rel="alternate" hreflang="x-default" href={alt('es')} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={t.meta.title} />
+    <meta property="og:description" content={t.meta.description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={t.lang === 'es' ? 'es_PY' : 'en_US'} />
+    <meta name="twitter:card" content="summary" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <script is:inline>
+      try {
+        var th = localStorage.getItem('theme');
+        if (th) document.documentElement.dataset.theme = th;
+      } catch (e) {}
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body>
+    <slot />
+    <script is:inline>
+      // Theme toggle
+      document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var root = document.documentElement;
+          var dark = root.dataset.theme
+            ? root.dataset.theme === 'dark'
+            : matchMedia('(prefers-color-scheme: dark)').matches;
+          var next = dark ? 'light' : 'dark';
+          root.dataset.theme = next;
+          try { localStorage.setItem('theme', next); } catch (e) {}
+        });
+      });
+      // Scroll reveal
+      var els = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+          });
+        }, { threshold: 0.12 });
+        els.forEach(function (el) { io.observe(el); });
+      } else {
+        els.forEach(function (el) { el.classList.add('in'); });
+      }
+      // Copy email
+      document.querySelectorAll('[data-copy]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var txt = b.getAttribute('data-copy');
+          var done = b.getAttribute('data-done');
+          var orig = b.textContent;
+          (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function () {
+            b.textContent = done;
+            setTimeout(function () { b.textContent = orig; }, 1800);
+          }).catch(function () {});
+        });
+      });
+    </script>
+  </body>
+</html>
