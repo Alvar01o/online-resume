@@ -1,0 +1,25 @@
+---
+import type { Content } from '../i18n/content';
+
+interface Props {
+  job: Content['experience']['items'][number];
+  currentLabel: string;
+  reveal?: boolean;
+}
+const { job: j, currentLabel, reveal = true } = Astro.props;
+const isCurrent = /Presente|Present/.test(j.period);
+const note = 'note' in j ? (j as { note?: string }).note : undefined;
+---
+<article class:list={['job', { reveal }]}>
+  <div class="when"><b>{j.period}</b>{j.duration}</div>
+  <div>
+    <h3>
+      {j.company}
+      {isCurrent && <span class="now">{currentLabel}</span>}
+      {note && <small>— {note}</small>}
+    </h3>
+    <div class="role">{j.role}</div>
+    <p>{j.text}</p>
+    <div class="chips">{j.tags.map((tag) => <span class="chip">{tag}</span>)}</div>
+  </div>
+</article>

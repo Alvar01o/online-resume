@@ -16,7 +16,7 @@ const es = {
     description:
       'Ingeniero de software senior con 14 años de experiencia en arquitectura, cloud e infraestructura. Fintech, facturación electrónica, GCP, AWS y Kubernetes.',
   },
-  nav: { about: 'Sobre mí', experience: 'Experiencia', skills: 'Skills', contact: 'Hablemos' },
+  nav: { about: 'Sobre mí', experience: 'Experiencia', projects: 'Proyectos', skills: 'Skills', contact: 'Hablemos' },
   hero: {
     eyebrow: 'Ingeniero de Software Senior',
     title: ['Diseño sistemas.', 'Los llevo a producción.'],
@@ -24,7 +24,8 @@ const es = {
     cta: 'Hablemos',
     cv: 'Descargar CV',
     cvFile: '/cv/Alvaro-Mercado-CV-es.pdf',
-    location: 'Encarnación, Paraguay · Disponible remoto',
+    location: 'Encarnación, Paraguay',
+    badge: { label: 'Actualmente en', value: 'ITTI · Fintech' },
     photoAlt: 'Retrato de Alvaro Mercado',
   },
   marquee: [
@@ -60,6 +61,9 @@ const es = {
   experience: {
     label: 'Experiencia',
     title: 'Trayectoria',
+    current: 'Actual',
+    older: 'Experiencia anterior',
+    olderRange: '2012 — 2020',
     items: [
       {
         company: 'ITTI',
@@ -120,6 +124,19 @@ const es = {
       },
     ],
   },
+  projects: {
+    label: 'Proyectos',
+    title: 'Proyectos personales y abiertos',
+    text: 'Repositorios públicos donde practico, pruebo ideas y comparto lo que aprendo.',
+    view: 'Ver en GitHub',
+    more: 'Ver todos los repositorios',
+    items: [
+      { name: 'kubernetes-playground', desc: 'Entorno local de Kubernetes con Minikube para practicar despliegue y administración de contenedores: exposición con LoadBalancer, escalado con ReplicaSets, rolling updates y rollbacks.', tags: ['Kubernetes', 'Minikube', 'Docker', 'kubectl'] },
+      { name: 'pagopar-market-api', desc: 'Desarrollo propio para gestionar pagos a través del servicio Pagopar, con Node.js y TypeScript.', tags: ['TypeScript', 'Node.js', 'Pagos'] },
+      { name: 'IssueTracker', desc: 'API de gestión de tareas con Spring Boot, caché y transacciones.', tags: ['Java', 'Spring Boot', 'Caché', 'Transacciones'] },
+      { name: 'LPIC-1', desc: 'Guía de estudio de LPIC-1 en español, con práctica en contenedores Docker.', tags: ['Linux', 'LPIC-1', 'Docker'] },
+    ],
+  },
   pillars: {
     label: 'Enfoque',
     title: 'Cómo trabajo',
@@ -127,7 +144,7 @@ const es = {
       { n: '01', title: 'Arquitectura', text: 'Diseño de sistemas pensados para escalar y mantenerse: colas, caché, bases de datos y límites claros entre servicios.' },
       { n: '02', title: 'Cloud & DevOps', text: 'GCP, AWS, Kubernetes, Docker y CI/CD. Entrega continua, endurecimiento de seguridad y monitoreo.' },
       { n: '03', title: 'Dominio & negocio', text: 'Experiencia en fintech: facturación electrónica (SIFEN) y pasarelas de pago, donde la precisión importa.' },
-      { n: '04', title: 'Automatización con IA', text: 'Desarrollo asistido por IA, orquestación de agentes y automatización de flujos con integraciones MCP.' },
+      { n: '04', title: 'Agentes de IA', text: 'Desarrollo asistido por IA, orquestación de agentes y automatización de flujos con integraciones MCP.' },
     ],
   },
   skills: {
@@ -169,7 +186,7 @@ const en: typeof es = {
     description:
       'Senior software engineer with 14 years of experience in architecture, cloud and infrastructure. Fintech, e-invoicing, GCP, AWS and Kubernetes.',
   },
-  nav: { about: 'About', experience: 'Experience', skills: 'Skills', contact: "Let's talk" },
+  nav: { about: 'About', experience: 'Experience', projects: 'Projects', skills: 'Skills', contact: "Let's talk" },
   hero: {
     eyebrow: 'Senior Software Engineer',
     title: ['I design systems.', 'I take them to production.'],
@@ -177,7 +194,8 @@ const en: typeof es = {
     cta: "Let's talk",
     cv: 'Download résumé',
     cvFile: '/cv/Alvaro-Mercado-Resume-en.pdf',
-    location: 'Encarnación, Paraguay · Open to remote',
+    location: 'Encarnación, Paraguay',
+    badge: { label: 'Currently at', value: 'ITTI · Fintech' },
     photoAlt: 'Portrait of Alvaro Mercado',
   },
   marquee: [
@@ -213,6 +231,9 @@ const en: typeof es = {
   experience: {
     label: 'Experience',
     title: 'Track record',
+    current: 'Current',
+    older: 'Earlier experience',
+    olderRange: '2012 — 2020',
     items: [
       {
         company: 'ITTI',
@@ -273,6 +294,19 @@ const en: typeof es = {
       },
     ],
   },
+  projects: {
+    label: 'Projects',
+    title: 'Personal & open projects',
+    text: 'Public repositories where I practice, try ideas and share what I learn.',
+    view: 'View on GitHub',
+    more: 'See all repositories',
+    items: [
+      { name: 'kubernetes-playground', desc: 'A local Kubernetes environment with Minikube to practice deploying and managing containers: LoadBalancer exposure, ReplicaSet scaling, rolling updates and rollbacks.', tags: ['Kubernetes', 'Minikube', 'Docker', 'kubectl'] },
+      { name: 'pagopar-market-api', desc: 'Own development to handle payments through the Pagopar service, built with Node.js and TypeScript.', tags: ['TypeScript', 'Node.js', 'Payments'] },
+      { name: 'IssueTracker', desc: 'Task manager API with Spring Boot, caching and transactions.', tags: ['Java', 'Spring Boot', 'Caching', 'Transactions'] },
+      { name: 'LPIC-1', desc: 'LPIC-1 study guide in Spanish, with hands-on practice using Docker containers.', tags: ['Linux', 'LPIC-1', 'Docker'] },
+    ],
+  },
   pillars: {
     label: 'Approach',
     title: 'How I work',
@@ -280,7 +314,7 @@ const en: typeof es = {
       { n: '01', title: 'Architecture', text: 'Systems designed to scale and to stay maintainable: queues, caching, databases and clear boundaries between services.' },
       { n: '02', title: 'Cloud & DevOps', text: 'GCP, AWS, Kubernetes, Docker and CI/CD. Continuous delivery, security hardening and monitoring.' },
       { n: '03', title: 'Domain & business', text: 'Fintech experience: electronic invoicing (SIFEN) and payment gateways, where precision matters.' },
-      { n: '04', title: 'AI automation', text: 'AI-assisted development, agent orchestration and workflow automation with MCP integrations.' },
+      { n: '04', title: 'AI agents', text: 'AI-assisted development, agent orchestration and workflow automation with MCP integrations.' },
     ],
   },
   skills: {

@@ -27,6 +27,8 @@
     const ripples: Ripple[] = [];
     const ptr = { x: -9999, y: -9999, on: false };
     let hub: Node | null = null;
+    // Zona del texto: los nodos con etiqueta no entran para no pisar el titular ni los botones
+    let avoid: { x0: number; y0: number; x1: number; y1: number } | null = null;
     let running = false, raf = 0, last = 0;
 
     const LINK = () => (w < 700 ? 110 : 150);   // distancia máxima de conexión
@@ -50,10 +52,30 @@
       }
     }
 
+    function measure() {
+      const copy = host.querySelector<HTMLElement>('.hero-copy');
+      if (!copy) { avoid = null; return; }
+      const hr = host.getBoundingClientRect(), cr = copy.getBoundingClientRect();
+      avoid = { x0: cr.left - hr.left - 16, y0: cr.top - hr.top - 12, x1: cr.right - hr.left + 16, y1: cr.bottom - hr.top + 12 };
+    }
+    // Un nodo con etiqueta sale del texto por el lado más cercano donde la etiqueta (~95px a la derecha) cabe en pantalla
+    function keepOut(n: Node) {
+      if (!avoid || !n.label) return;
+      const LBL = 95;
+      if (n.x + LBL <= avoid.x0 || n.x >= avoid.x1 || n.y <= avoid.y0 || n.y >= avoid.y1) return;
+      const opts: [number, () => void][] = [];
+      if (avoid.x0 - LBL >= 6) opts.push([n.x + LBL - avoid.x0, () => { n.x = avoid.x0 - LBL; n.vx = -Math.abs(n.vx); }]);
+      if (avoid.x1 <= w - LBL) opts.push([avoid.x1 - n.x, () => { n.x = avoid.x1; n.vx = Math.abs(n.vx); }]);
+      if (avoid.y0 >= 8) opts.push([n.y - avoid.y0, () => { n.y = avoid.y0; n.vy = -Math.abs(n.vy); }]);
+      if (avoid.y1 <= h - 8) opts.push([avoid.y1 - n.y, () => { n.y = avoid.y1; n.vy = Math.abs(n.vy); }]);
+      if (!opts.length) return;
+      opts.sort((p, q) => p[0] - q[0])[0][1]();
+    }
+
     function resize() {
       const nw = host.clientWidth, nh = host.clientHeight;
       if (!nw || !nh) return;
-      dpr = Math.min(devicePixelRatio || 1, 2);
+      dpr = Math.min(devicePixelRatio || 1, nw < 700 ? 1.5 : 2);
       canvas!.width = Math.round(nw * dpr);
       canvas!.height = Math.round(nh * dpr);
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -62,6 +84,8 @@
       }
       w = nw; h = nh;
       if (!nodes.length) build();
+      measure();
+      for (const n of nodes) keepOut(n);
       draw();
     }
 
@@ -83,6 +107,7 @@
         n.x += n.vx * dt; n.y += n.vy * dt;
         if (n.x < 0 || n.x > w) { n.vx *= -1; n.x = Math.max(0, Math.min(w, n.x)); }
         if (n.y < 0 || n.y > h) { n.vy *= -1; n.y = Math.max(0, Math.min(h, n.y)); }
+        keepOut(n);
         n.flash = Math.max(0, n.flash - dt * 1.6);
       }
       for (let i = ripples.length - 1; i >= 0; i--) {
@@ -175,7 +200,10 @@
     const start = () => { if (!running && !reduce) { running = true; last = performance.now(); raf = requestAnimationFrame(loop); } };
     const stop = () => { running = false; cancelAnimationFrame(raf); };
 
-    new ResizeObserver(resize).observe(host);
+    const ro = new ResizeObserver(resize);
+    ro.observe(host);
+    const copyEl = host.querySelector('.hero-copy');
+    if (copyEl) ro.observe(copyEl);
     resize();
     canvas.classList.add('ready');
     if (reduce) return;

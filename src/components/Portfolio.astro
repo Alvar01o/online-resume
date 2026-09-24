@@ -1,6 +1,9 @@
 ---
+import { Picture, getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import GraphBackground from './GraphBackground.astro';
+import Job from './Job.astro';
+import cutout from '../assets/alvaro-cutout.png';
 import { content, site, type Lang } from '../i18n/content';
 
 interface Props { lang: Lang; }
@@ -8,29 +11,40 @@ const { lang } = Astro.props;
 const t = content[lang];
 const other: Lang = lang === 'es' ? 'en' : 'es';
 const marquee = [...t.marquee, ...t.marquee];
+const RECENT = 4;
+const recent = t.experience.items.slice(0, RECENT);
+const older = t.experience.items.slice(RECENT);
+// La misma silueta se usa como máscara de la capa de iluminación
+const litMask = await getImage({ src: cutout, format: 'webp', width: 640 });
+const skip = lang === 'es' ? 'Saltar al contenido' : 'Skip to content';
+const links = [
+  ['about', t.nav.about],
+  ['experience', t.nav.experience],
+  ['projects', t.nav.projects],
+  ['skills', t.nav.skills],
+  ['contact', t.nav.contact],
+];
 ---
 <Base t={t}>
-  <header class="header">
+  <a class="skip" href="#top">{skip}</a>
+  <header class="header on-hero">
     <div class="wrap">
       <a href="#top" class="logo"><i></i>{site.name}</a>
       <nav class="nav" aria-label="Main">
-        <a href="#about">{t.nav.about}</a>
-        <a href="#experience">{t.nav.experience}</a>
-        <a href="#skills">{t.nav.skills}</a>
-        <a href="#contact">{t.nav.contact}</a>
+        {links.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
       </nav>
       <div class="tools">
         <details class="menu">
           <summary class="pill" aria-label="Menu">☰</summary>
           <nav class="menu-panel" aria-label="Mobile">
-            <a href="#about">{t.nav.about}</a>
-            <a href="#experience">{t.nav.experience}</a>
-            <a href="#skills">{t.nav.skills}</a>
-            <a href="#contact">{t.nav.contact}</a>
+            {links.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
           </nav>
         </details>
-        <button class="pill" type="button" data-theme-toggle aria-label="Toggle theme">◐</button>
-        <a class="pill" href={`/${other}/`} hreflang={other} lang={other}>{t.switch.short}</a>
+        <button class="pill icon" type="button" data-theme-toggle aria-label="Toggle theme">
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="currentColor"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"/></g></svg>
+        </button>
+        <a class="pill" href={`/${other}/`} hreflang={other} lang={other} title={t.switch.label}>{t.switch.short}</a>
       </div>
     </div>
   </header>
@@ -40,7 +54,7 @@ const marquee = [...t.marquee, ...t.marquee];
     <section class="hero">
       <GraphBackground />
       <div class="wrap hero-grid">
-        <div class="reveal hero-copy">
+        <div class="hero-copy">
           <span class="label eyebrow">{t.hero.eyebrow}</span>
           <h1>{t.hero.title[0]} <em>{t.hero.title[1]}</em></h1>
           <p class="lead">{t.hero.lead}</p>
@@ -61,11 +75,23 @@ const marquee = [...t.marquee, ...t.marquee];
             <span class="loc">{t.hero.location}</span>
           </div>
         </div>
-        <div class="portrait reveal">
-          <div class="frame">
-            <img src={site.photo} alt={t.hero.photoAlt} width="800" height="800" fetchpriority="high" />
+        <div class="portrait">
+          <div class="frame" style={`--cutout:url(${litMask.src})`}>
+            <div class="lit">
+              <Picture
+                src={cutout}
+                formats={['avif', 'webp']}
+                fallbackFormat="webp"
+                widths={[280, 420, 560, 800]}
+                sizes="(max-width: 700px) 260px, 460px"
+                alt={t.hero.photoAlt}
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+              />
+            </div>
           </div>
-          <div class="badge"><b>{t.stats[0].value}+</b>{t.stats[0].label}</div>
+          <div class="badge"><span>{t.hero.badge.label}</span><b>{t.hero.badge.value}</b></div>
         </div>
       </div>
     </section>
@@ -116,18 +142,42 @@ const marquee = [...t.marquee, ...t.marquee];
           <h2 class="h2">{t.experience.title}</h2>
         </div>
         <div class="timeline">
-          {t.experience.items.map((j) => (
-            <article class="job reveal">
-              <div class="when"><b>{j.period}</b>{j.duration}</div>
-              <div>
-                <h3>{j.company}{'note' in j && j.note ? <small>— {j.note}</small> : null}</h3>
-                <div class="role">{j.role}</div>
-                <p>{j.text}</p>
-                <div class="chips">{j.tags.map((tag) => <span class="chip">{tag}</span>)}</div>
+          {recent.map((j) => <Job job={j} currentLabel={t.experience.current} />)}
+          {older.length > 0 && (
+            <details class="older">
+              <summary>
+                <span>{t.experience.older} <em>· {t.experience.olderRange}</em></span>
+                <i aria-hidden="true"></i>
+              </summary>
+              {older.map((j) => <Job job={j} currentLabel={t.experience.current} reveal={false} />)}
+            </details>
+          )}
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects" style="padding-top:0">
+      <div class="wrap">
+        <div class="reveal">
+          <span class="label">{t.projects.label}</span>
+          <h2 class="h2">{t.projects.title}</h2>
+          <p class="section-lead">{t.projects.text}</p>
+        </div>
+        <div class="projects-grid">
+          {t.projects.items.map((p) => (
+            <a class="project reveal" href={`${site.github}/${p.name}`} target="_blank" rel="noopener noreferrer">
+              <div class="p-top">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v16H6.5a1 1 0 0 0 0 2H20v2H6.5A2.5 2.5 0 0 1 4 19.5v-15zM6.5 4a.5.5 0 0 0-.5.5v11.2c.15-.07.32-.1.5-.1H18V4H6.5z" fill="currentColor"/></svg>
+                <span class="p-view">{t.projects.view} ↗</span>
               </div>
-            </article>
+              <h3>{p.name}</h3>
+              <p>{p.desc}</p>
+              <div class="chips">{p.tags.map((tag) => <span class="chip">{tag}</span>)}</div>
+            </a>
           ))}
         </div>
+        <a class="more" href={site.github} target="_blank" rel="noopener noreferrer">{t.projects.more} →</a>
       </div>
     </section>
 
@@ -165,14 +215,17 @@ const marquee = [...t.marquee, ...t.marquee];
             </div>
           ))}
         </div>
-        <div class="edu">
-          {t.education.items.map((e) => (
-            <div class="edu-item reveal">
-              <time>{e.period}</time>
-              <b>{e.title}</b>
-              <span>{e.place}</span>
-            </div>
-          ))}
+        <div class="edu-wrap reveal">
+          <span class="label">{t.education.label}</span>
+          <div class="edu">
+            {t.education.items.map((e) => (
+              <div class="edu-item">
+                <time>{e.period}</time>
+                <b>{e.title}</b>
+                <span>{e.place}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -187,6 +240,7 @@ const marquee = [...t.marquee, ...t.marquee];
           <a class="btn" href={`mailto:${site.email}`}>{t.contact.cta} →</a>
           <button class="btn ghost" type="button" data-copy={site.email} data-done={t.contact.copied}>{t.contact.copy}</button>
           <a class="btn ghost" href={site.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+          <a class="btn ghost" href={site.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a>
         </div>
         <span class="mail">{site.email}</span>
       </div>
@@ -196,7 +250,11 @@ const marquee = [...t.marquee, ...t.marquee];
   <footer class="footer">
     <div class="wrap">
       <span>© {new Date().getFullYear()} {site.name}. {t.footer.rights}</span>
-      <a href="#top">{t.footer.top}</a>
+      <span class="flinks">
+        <a href={site.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href={site.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="#top">{t.footer.top}</a>
+      </span>
     </div>
   </footer>
 </Base>

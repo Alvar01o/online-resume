@@ -1,14 +1,30 @@
 ---
+import '@fontsource/jetbrains-mono/latin-400.css';
+import '@fontsource/jetbrains-mono/latin-500.css';
+import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import monoLatin from '@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2?url';
 import '../styles/global.css';
-import type { Content } from '../i18n/content';
+import { site, type Content } from '../i18n/content';
 
 interface Props { t: Content; }
 const { t } = Astro.props;
-const other = t.lang === 'es' ? 'en' : 'es';
 const path = Astro.url.pathname;
 const canonical = new URL(path, Astro.site);
 const alt = (l: string) => new URL(`/${l}/`, Astro.site).href;
 const ogImage = new URL('/img/alvaro.jpg', Astro.site).href;
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  jobTitle: t.hero.eyebrow,
+  url: canonical.href,
+  image: ogImage,
+  sameAs: [site.github, site.linkedin],
+  address: { '@type': 'PostalAddress', addressLocality: 'Encarnación', addressCountry: 'PY' },
+  knowsAbout: ['System design', 'Cloud infrastructure', 'Kubernetes', 'GCP', 'AWS', 'PHP', 'Laravel', 'Node.js', 'AI agents'],
+};
+// Inter (variable) solo en su subconjunto latino: cubre español e inglés y evita ~150 KB de alfabetos sin uso
+const interFace = `@font-face{font-family:'Inter Variable';font-style:normal;font-display:swap;font-weight:100 900;src:url(${interLatin}) format('woff2-variations');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}`;
 ---
 <!doctype html>
 <html lang={t.lang}>
@@ -17,11 +33,16 @@ const ogImage = new URL('/img/alvaro.jpg', Astro.site).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{t.meta.title}</title>
     <meta name="description" content={t.meta.description} />
+    <meta name="theme-color" content="#0a1130" />
     <link rel="canonical" href={canonical.href} />
     <link rel="alternate" hreflang="es" href={alt('es')} />
     <link rel="alternate" hreflang="en" href={alt('en')} />
     <link rel="alternate" hreflang="x-default" href={alt('es')} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content={t.meta.title} />
@@ -30,12 +51,12 @@ const ogImage = new URL('/img/alvaro.jpg', Astro.site).href;
     <meta property="og:locale" content={t.lang === 'es' ? 'es_PY' : 'en_US'} />
     <meta name="twitter:card" content="summary" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-    />
+    <!-- Fuentes propias: sin peticiones a terceros; solo se precargan las críticas -->
+    <link rel="preload" as="font" type="font/woff2" href={interLatin} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={monoLatin} crossorigin />
+
+    <style is:inline set:html={interFace}></style>
+    <script type="application/ld+json" set:html={JSON.stringify(ld)} />
     <script is:inline>
       try {
         var th = localStorage.getItem('theme');
@@ -59,6 +80,22 @@ const ogImage = new URL('/img/alvaro.jpg', Astro.site).href;
           try { localStorage.setItem('theme', next); } catch (e) {}
         });
       });
+
+      // Header: oscuro sobre el hero, con el tema de la página al bajar
+      var header = document.querySelector('.header');
+      var hero = document.querySelector('.hero');
+      if (header && hero) {
+        var ticking = false;
+        var upd = function () {
+          ticking = false;
+          header.classList.toggle('on-hero', window.scrollY < hero.offsetHeight - 64);
+        };
+        upd();
+        window.addEventListener('scroll', function () {
+          if (!ticking) { ticking = true; requestAnimationFrame(upd); }
+        }, { passive: true });
+      }
+
       // Mobile menu: close on link click / outside tap
       var menu = document.querySelector('.menu');
       if (menu) {
@@ -69,6 +106,7 @@ const ogImage = new URL('/img/alvaro.jpg', Astro.site).href;
           if (!menu.contains(e.target)) menu.removeAttribute('open');
         });
       }
+
       // Scroll reveal
       var els = document.querySelectorAll('.reveal');
       if ('IntersectionObserver' in window) {
@@ -78,9 +116,27 @@ const ogImage = new URL('/img/alvaro.jpg', Astro.site).href;
           });
         }, { threshold: 0.12 });
         els.forEach(function (el) { io.observe(el); });
+
+        // Scrollspy: resalta en el menú la sección visible
+        var links = {};
+        document.querySelectorAll('.nav a[href^="#"]').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            var a = links[e.target.id];
+            if (!a) return;
+            if (e.isIntersecting) {
+              Object.keys(links).forEach(function (k) { links[k].removeAttribute('aria-current'); });
+              a.setAttribute('aria-current', 'true');
+            } else if (a.getAttribute('aria-current')) {
+              a.removeAttribute('aria-current');
+            }
+          });
+        }, { rootMargin: '-40% 0px -55% 0px' });
+        Object.keys(links).forEach(function (id) { var s = document.getElementById(id); if (s) spy.observe(s); });
       } else {
         els.forEach(function (el) { el.classList.add('in'); });
       }
+
       // Copy email
       document.querySelectorAll('[data-copy]').forEach(function (b) {
         b.addEventListener('click', function () {
