@@ -29,7 +29,7 @@ const marquee = [...t.marquee, ...t.marquee];
     <!-- Hero -->
     <section class="hero">
       <div class="wrap hero-grid">
-        <div class="reveal">
+        <div class="reveal hero-copy">
           <span class="label eyebrow">{t.hero.eyebrow}</span>
           <h1>{t.hero.title[0]} <em>{t.hero.title[1]}</em></h1>
           <p class="lead">{t.hero.lead}</p>
@@ -91,28 +91,6 @@ const marquee = [...t.marquee, ...t.marquee];
           <div class="langs">
             {t.about.langList.map(([n, l]) => (
               <div><b>{n}</b><span>{l}</span></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Featured -->
-    <section style="padding-top:0">
-      <div class="wrap reveal">
-        <span class="label">{t.featured.label}</span>
-        <div class="featured-card">
-          <div>
-            <span class="label">{t.featured.kicker}</span>
-            <h3>{t.featured.title}</h3>
-            <p class="desc">{t.featured.text}</p>
-            <div class="chips">
-              {t.featured.tags.map((tag) => <span class="chip">{tag}</span>)}
-            </div>
-          </div>
-          <div class="points">
-            {t.featured.points.map(([k, v]) => (
-              <div class="point"><b>{k}</b><span>{v}</span></div>
             ))}
           </div>
         </div>

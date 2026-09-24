@@ -42,7 +42,7 @@ const es = {
     { value: '14', label: 'años de experiencia', sub: 'desde 2012' },
     { value: '5.0★', label: 'calificación en Upwork', sub: 'contratista independiente' },
     { value: '10.000+', label: 'horas facturadas', sub: 'en 10 proyectos' },
-    { value: '1.000+', label: 'clientes atendidos', sub: 'por BIMS en todo el país' },
+    { value: '1.000+', label: 'clientes atendidos', sub: 'en todo el país' },
   ],
   about: {
     label: 'Sobre mí',
@@ -56,19 +56,6 @@ const es = {
       ['Español', 'Nativo'],
       ['Inglés', 'Avanzado'],
     ],
-  },
-  featured: {
-    label: 'Proyecto destacado',
-    title: 'BIMS',
-    kicker: 'ITTI · Fintech / Regtech',
-    text: 'Sistema que da servicio a más de 1.000 clientes en todo el país, con integración a SIFEN — el sistema nacional de facturación electrónica — dentro de una compañía certificada ISO 27001/9001.',
-    points: [
-      ['Rendimiento', 'Optimización de código e infraestructura: caché con Redis y colas con SQS.'],
-      ['Despliegue', 'Deployments en AWS y GCP sobre Kubernetes y rediseño de los procesos de delivery para acelerar la entrega a clientes.'],
-      ['Automatización', 'Flujos de gestión automatizados con agentes de IA e integraciones MCP.'],
-      ['Confiabilidad', 'Refuerzo de seguridad y monitoreo de rendimiento en equipos de +20 ingenieros.'],
-    ],
-    tags: ['CakePHP', 'PHP', 'SIFEN', 'Redis', 'SQS', 'AWS', 'GCP', 'Kubernetes', 'Docker', 'PostgreSQL', 'Agentes IA', 'MCP'],
   },
   experience: {
     label: 'Experiencia',
@@ -208,7 +195,7 @@ const en: typeof es = {
     { value: '14', label: 'years of experience', sub: 'since 2012' },
     { value: '5.0★', label: 'Upwork rating', sub: 'independent contractor' },
     { value: '10,000+', label: 'billed hours', sub: 'across 10 projects' },
-    { value: '1,000+', label: 'clients served', sub: 'by BIMS nationwide' },
+    { value: '1,000+', label: 'clients served', sub: 'nationwide' },
   ],
   about: {
     label: 'About',
@@ -222,19 +209,6 @@ const en: typeof es = {
       ['Spanish', 'Native'],
       ['English', 'Advanced'],
     ],
-  },
-  featured: {
-    label: 'Featured project',
-    title: 'BIMS',
-    kicker: 'ITTI · Fintech / Regtech',
-    text: "A system serving 1,000+ clients nationwide, integrated with SIFEN — Paraguay's national e-invoicing system — within a company that is ISO 27001/9001 certified.",
-    points: [
-      ['Performance', 'Code and infrastructure optimization: Redis caching and SQS queues.'],
-      ['Delivery', 'Deployments on AWS and GCP with Kubernetes, plus a redesign of delivery processes to speed up client delivery.'],
-      ['Automation', 'Management workflows automated with AI agents and MCP integrations.'],
-      ['Reliability', 'Security hardening and performance monitoring in cross-functional teams of 20+ engineers.'],
-    ],
-    tags: ['CakePHP', 'PHP', 'SIFEN', 'Redis', 'SQS', 'AWS', 'GCP', 'Kubernetes', 'Docker', 'PostgreSQL', 'AI Agents', 'MCP'],
   },
   experience: {
     label: 'Experience',
